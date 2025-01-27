@@ -1,18 +1,24 @@
+// src/router.js
 import { createRouter, createWebHistory } from 'vue-router';
-import store from '@/store/store.js';
-import Swal from 'sweetalert2';
+import App from '@/App.vue';
+import NoticeList from '@/components/Notice/NoticeList.vue';  // 공지사항 리스트 컴포넌트
 
-// const routes = [
-//     {
-//         path: '/',
-//         name: '통합화면',
-//         component: 통합창
-//     }
-// ]
+// import store from '@/store/store.js';
+const routes = [
+    {
+        path: '/',
+        name: 'Home',
+        component: App,
+    },
+    {
+        path: '/notice/list',
+        name: '공지사항 전체 조회창',
+        component: NoticeList },
+];
 
 const router = createRouter({
     history: createWebHistory(),
-    routes
+    routes,
 });
 
 export default router;
