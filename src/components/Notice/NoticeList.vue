@@ -91,7 +91,7 @@
             class="tr__bd"
         >
           <td class="num">{{ index + 1 + (currentPage - 1) * itemsPerPage }}</td>
-          <td class="title" style="width: 20%" @click="showDetailsNoticePopup(item)">{{ item.noticeTitle }}</td>
+          <td class="title" style="width: 20%" @click="showDetailNoticePopup(item)">{{ item.noticeTitle }}</td>
           <td style="width: 40%">{{ item.noticeContent }}</td>
           <td class="date">{{ item.noticeEnrollDate }}</td>
           <td style="">
@@ -104,7 +104,7 @@
     </div>
 
     <!-- 공지사항 상세 정보 팝업 -->
-    <NoticeDetailsPopup v-if="viewPopup && selectedNotice" :notice="selectedNotice" @close="closeDetailsPopup" />
+    <NoticeDetailPopup v-if="viewPopup && selectedNotice" :notice="selectedNotice" @close="closeDetailPopup" />
 
     <!-- 페이지네이션 -->
     <div class="pagination">
@@ -118,6 +118,7 @@
 
 <script setup>
 import { ref, computed ,onMounted } from 'vue';
+import NoticeDetailPopup from "@/components/Notice/NoticeDetailPopup.vue";
 import Swal from 'sweetalert2'
 
 const lists = ref([]);
@@ -302,12 +303,12 @@ const deleteNotice = async (noticeCode) => {
   }
 };
 
-const showDetailsNoticePopup = (item) => {
+const showDetailNoticePopup = (item) => {
   selectedNotice.value = item;
   viewPopup.value = true;
 };
 
-const closeDetailsPopup = () => {
+const closeDetailPopup = () => {
   viewPopup.value = false;
 };
 
