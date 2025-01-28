@@ -5,7 +5,7 @@
       <div style="  max-width: 1440px;justify-content: center;align-items: center;"  >
         <br>
         <div style="float: left" ><img src="@/assets/icon/공지사항.png" style="width: 18px"/>&nbsp;
-          <span class="breadcrumb">공지 및 문의 관리 > 공지 관리 > 공지사항 조회 및 관리</span>
+          <span class="breadcrumb">공지사항</span>
         </div>
       </div>
     </div>
@@ -49,11 +49,11 @@
     </div>
     <div class="filter-buttons">
       <div class="post-btn" id="app">
-        <button style="float: right" class="btn-saveNotice"  @click="showRegisterForm" v-if="isRoot">공지사항 등록</button>
+        <button style="float: right" class="btn-saveNotice"  @click="showRegisterForm">공지사항 등록</button>
       </div>
     </div>
     <!-- 공지사항 등록 팝업 -->
-    <NoticeResisterPopup
+    <NoticeRegisterPopup
         v-if="isRegisterFormVisible"
         :notice="newNotice"
         @close="toggleRegisterForm"
@@ -67,12 +67,8 @@
         @close="toggleEditForm"
         @submit="submitNotice"
     />
-
     <!-- 오버레이 -->
-    <div v-if="isRegisterFormVisible && isEditFormVisible" class="overlay">
-
-    </div>
-
+    <div v-if="isRegisterFormVisible && isEditFormVisible" class="overlay"></div>
     <!-- 공지사항 목록 -->
     <div class="table-container">
       <table class="table">
@@ -102,10 +98,8 @@
         </tbody>
       </table>
     </div>
-
     <!-- 공지사항 상세 정보 팝업 -->
     <NoticeDetailPopup v-if="viewPopup && selectedNotice" :notice="selectedNotice" @close="closeDetailPopup" />
-
     <!-- 페이지네이션 -->
     <div class="pagination">
       <button @click="prevPage" :disabled="currentPage === 1">이전</button>
@@ -119,6 +113,8 @@
 <script setup>
 import { ref, computed ,onMounted } from 'vue';
 import NoticeDetailPopup from "@/components/Notice/NoticeDetailPopup.vue";
+import NoticeRegisterPopup from "@/components/Notice/NoticeRegisterPopup.vue";
+import NoticeEditPopup from "@/components/Notice/NoticeEditPopup.vue";
 import Swal from 'sweetalert2'
 
 const lists = ref([]);
@@ -237,70 +233,87 @@ const closeOverlay = () => {
 
 };
 
-const submitNotice = async (notice) => {
+// 새로운 공지사항을 등록하는 함수
+const registerNotice = async (notice) => {
   try {
-    const method = isEditFormVisible.value ? 'PUT' : 'POST';
-    const url = isEditFormVisible.value
-        ? `http://api.pioms.shop/admin/notice/list/update/${notice.noticeCode}?requesterAdminCode=1`
-        : 'http://api.pioms.shop/admin/notice/list/register?requesterAdminCode=1';
-
-    const response = await fetch(url, {
-      method: method,
+    console.log('전송 데이터:', notice);
+    const response = await fetch('http://localhost:5000/notice/create', {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(notice),
     });
 
     if (!response.ok) {
-      throw new Error(isEditFormVisible.value ? '공지사항 수정 실패' : '공지사항 등록 실패');
+      throw new Error('공지사항 등록 실패');
     }
 
-    if (isEditFormVisible.value) {
-      await Swal.fire({
-        icon: 'success',
-        title: '수정 성공',
-        text: '공지사항이 수정되었습니다.',
-      });
-    } else {
-      await Swal.fire({
-        icon: 'success',
-        title: '등록 성공',
-        text: '공지사항이 등록되었습니다.',
-      });
-    }
+    const result = await response.json();
+    console.log('서버 응답:', result);
 
-    location.reload();
-    toggleRegisterForm();
-    toggleEditForm();
-    getNotice();
+    await Swal.fire({
+      icon: 'success',
+      title: '등록 성공',
+      text: '공지사항이 성공적으로 등록되었습니다.',
+    });
+
+    getNotice(); // 공지사항 목록 새로고침
   } catch (error) {
-    console.error('공지사항 처리 오류:', error);
+    console.error('공지사항 등록 오류:', error);
+    Swal.fire({
+      icon: 'error',
+      title: '등록 실패',
+      text: error.message,
+    });
   }
 };
 
-const deleteNotice = async (noticeCode) => {
+
+// 기존 공지사항을 수정하는 함수
+const updateNotice = async (notice) => {
   try {
-    if (confirm('해당 공지사항을 삭제하시겠습니까?')) {
-      const response = await fetch(`http://api.pioms.shop/admin/notice/list/delete/${noticeCode}?requesterAdminCode=1`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+    const response = await fetch(`http://localhost:5000/notice/update/${notice.noticeCode}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(notice),
+    });
 
-
-      if (!response.ok) {
-        throw new Error('공지사항 삭제 실패');
-      }
-
-      getNotice();
+    if (!response.ok) {
+      throw new Error('공지사항 수정 실패');
     }
+
+    await Swal.fire({
+      icon: 'success',
+      title: '수정 성공',
+      text: '공지사항이 성공적으로 수정되었습니다.',
+    });
+
+    // 공지사항 목록 새로고침
+    getNotice();
   } catch (error) {
-    console.error('공지사항 삭제 오류:', error);
+    console.error('공지사항 수정 오류:', error);
+    await Swal.fire({
+      icon: 'error',
+      title: '수정 실패',
+      text: error.message,
+    });
   }
+};
+
+// 등록 및 수정 처리 로직을 나눈 submitNotice
+const submitNotice = (notice) => {
+  if (isEditFormVisible.value) {
+    updateNotice(notice); // 수정 로직 호출
+  } else {
+    registerNotice(notice); // 등록 로직 호출
+  }
+
+  // 팝업 닫기
+  toggleRegisterForm();
+  toggleEditForm();
 };
 
 const showDetailNoticePopup = (item) => {
