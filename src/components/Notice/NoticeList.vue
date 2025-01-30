@@ -236,29 +236,49 @@ const closeOverlay = () => {
 // 새로운 공지사항을 등록하는 함수
 const registerNotice = async (notice) => {
   try {
-    console.log('전송 데이터:', notice);
-    const response = await fetch('http://localhost:5000/notice/create', {
+    // adminCode를 notice에 추가
+    const noticeWithAdminCode = {
+      ...notice,
+      adminCode: 1, // adminCode를 1로 추가
+    };
+
+    const response = await fetch(`http://localhost:5000/notice/regist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(notice),
+      body: JSON.stringify(noticeWithAdminCode), // 수정된 데이터 전송
     });
 
     if (!response.ok) {
       throw new Error('공지사항 등록 실패');
     }
 
-    const result = await response.json();
-    console.log('서버 응답:', result);
+    // 응답을 JSON으로 변환하기 전에 문자열로 처리
+    const responseText = await response.text(); // 응답을 텍스트로 받음
 
-    await Swal.fire({
-      icon: 'success',
-      title: '등록 성공',
-      text: '공지사항이 성공적으로 등록되었습니다.',
-    });
+    // 만약 응답이 JSON 형태로 변환 가능한 경우
+    try {
+      const result = JSON.parse(responseText); // 텍스트를 JSON으로 변환
+      console.log('서버 응답:', result);
 
-    getNotice(); // 공지사항 목록 새로고침
+      await Swal.fire({
+        icon: 'success',
+        title: '등록 성공',
+        text: '공지사항이 성공적으로 등록되었습니다.',
+      });
+
+      getNotice(); // 공지사항 목록 새로고침
+    } catch (jsonError) {
+      // JSON 변환이 실패하면 그냥 텍스트로 처리
+      console.log('서버 응답 텍스트:', responseText);
+      Swal.fire({
+        icon: 'success',
+        title: '등록 성공',
+        text: responseText, // 원래 메시지를 표시
+      });
+    }
+
   } catch (error) {
     console.error('공지사항 등록 오류:', error);
     Swal.fire({
@@ -268,7 +288,6 @@ const registerNotice = async (notice) => {
     });
   }
 };
-
 
 // 기존 공지사항을 수정하는 함수
 const updateNotice = async (notice) => {
@@ -305,13 +324,12 @@ const updateNotice = async (notice) => {
 
 // 등록 및 수정 처리 로직을 나눈 submitNotice
 const submitNotice = (notice) => {
+  console.log('NoticeList.vue에서 받은 공지사항:', notice); // 추가된 로그
   if (isEditFormVisible.value) {
     updateNotice(notice); // 수정 로직 호출
   } else {
     registerNotice(notice); // 등록 로직 호출
   }
-
-  // 팝업 닫기
   toggleRegisterForm();
   toggleEditForm();
 };
