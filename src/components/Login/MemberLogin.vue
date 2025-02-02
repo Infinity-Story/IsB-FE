@@ -5,11 +5,23 @@
       <form @submit.prevent="handleLogin">
         <div class="input-group">
           <label for="username">아이디</label>
-          <input type="text" id="username" v-model="username" placeholder="아이디를 입력하세요" required />
+          <input
+              type="text"
+              id="memberName"
+              v-model="memberName"
+              placeholder="아이디를 입력하세요"
+              required
+          />
         </div>
         <div class="input-group">
           <label for="password">비밀번호</label>
-          <input type="password" id="password" v-model="password" placeholder="비밀번호를 입력하세요" required />
+          <input
+              type="password"
+              id="memberPw"
+              v-model="memberPw"
+              placeholder="비밀번호를 입력하세요"
+              required
+          />
         </div>
         <button type="submit" class="login-btn">로그인</button>
       </form>
@@ -17,23 +29,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'UserLogin',
-  data() {
-    return {
-      username: '',
-      password: '',
-    };
-  },
-  methods: {
-    handleLogin() {
-      // 로그인 로직 처리
-      console.log('아이디:', this.username);
-      console.log('비밀번호:', this.password);
-      // 이후 API 요청이나 로직 추가
-    },
-  },
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const memberName = ref('');
+const memberPw = ref('');
+const router = useRouter();
+
+const handleLogin = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/user-login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: memberName.value,
+        password: memberPw.value,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('로그인 실패');
+    }
+
+    const data = await response.json();
+    const token = data.token;
+    localStorage.setItem('jwtToken', token); // JWT 토큰 저장
+
+    router.push('/member-main'); // MemberMainPage로 리다이렉트
+  } catch (error) {
+    alert('로그인 실패: ' + error.message);
+    console.error(error);
+  }
 };
 </script>
 

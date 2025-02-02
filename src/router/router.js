@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import NoticeList from '@/components/Notice/NoticeList.vue';
 import MainLogin from "@/components/Login/MainLogin.vue";
-import UserLogin from "@/components/Login/UserLogin.vue";
+import MemberLogin from "@/components/Login/MemberLogin.vue"; // 일반 회원 로그인
 import AdminLogin from "@/components/Login/AdminLogin.vue";
-import AdminMainPage from "@/components/Admin/AdminMainPage.vue";  // 관리자 페이지
+import AdminMainPage from "@/components/Admin/AdminMainPage.vue"; // 관리자 메인 페이지
+import MemberMainPage from "@/components/Member/MemberMainPage.vue"; // 일반 회원 메인 페이지
 
 const routes = [
     {
@@ -19,7 +20,7 @@ const routes = [
     {
         path: '/user-login',
         name: '일반 회원 로그인창',
-        component: UserLogin,
+        component: MemberLogin, // 회원 로그인 페이지
     },
     {
         path: '/admin-login',
@@ -30,6 +31,12 @@ const routes = [
         path: '/admin-main',
         name: '관리자 메인 페이지',
         component: AdminMainPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/member-main',
+        name: '회원 메인 페이지',
+        component: MemberMainPage, // 회원 메인 페이지 추가
         meta: { requiresAuth: true }, // 인증이 필요한 페이지
     },
 ];
@@ -39,13 +46,12 @@ const router = createRouter({
     routes,
 });
 
-// 라우터 가드: 인증이 필요한 페이지는 로그인되어 있지 않으면 /admin-login으로 리다이렉트
+// 라우터 가드: 인증이 필요한 페이지는 로그인되어 있지 않으면 로그인 페이지로 리다이렉트
 router.beforeEach((to, from, next) => {
     const isAuthenticated = !!localStorage.getItem('jwtToken'); // JWT 토큰 확인
 
     if (to.meta.requiresAuth && !isAuthenticated) {
-        // 인증이 필요한 페이지에 접근하려면 로그인 되어야 함
-        next('/admin-login');
+        next('/user-login'); // 인증되지 않은 사용자 로그인 페이지로 리다이렉트
     } else {
         next();
     }
