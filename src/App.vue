@@ -8,6 +8,7 @@
 
 <script>
 import MainLogin from "@/components/Login/MainLogin.vue";
+
 export default {
   name: 'App',
   components: {
@@ -16,6 +17,6 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 /* 스타일을 여기에 추가할 수 있습니다. */
 </style>

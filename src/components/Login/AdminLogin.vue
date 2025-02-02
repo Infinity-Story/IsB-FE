@@ -5,37 +5,69 @@
       <form @submit.prevent="handleLogin">
         <div class="input-group">
           <label for="adminUsername">아이디</label>
-          <input type="text" id="adminUsername" v-model="adminUsername" placeholder="아이디를 입력하세요" required />
+          <input
+              type="text"
+              id="adminUsername"
+              v-model="adminUsername"
+              placeholder="아이디를 입력하세요"
+              required
+          />
         </div>
         <div class="input-group">
           <label for="adminPassword">비밀번호</label>
-          <input type="password" id="adminPassword" v-model="adminPassword" placeholder="비밀번호를 입력하세요" required />
+          <input
+              type="password"
+              id="adminPassword"
+              v-model="adminPassword"
+              placeholder="비밀번호를 입력하세요"
+              required
+          />
         </div>
         <button type="submit" class="login-btn">로그인</button>
       </form>
+      <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'AdminLogin',
-  data() {
-    return {
-      adminUsername: '',
-      adminPassword: '',
-    };
-  },
-  methods: {
-    handleLogin() {
-      // 관리자 로그인 로직 처리
-      console.log('아이디:', this.adminUsername);
-      console.log('비밀번호:', this.adminPassword);
-      // 이후 API 요청이나 로직 추가
-    },
-  },
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const adminUsername = ref('');
+const adminPassword = ref('');
+const errorMessage = ref('');
+const router = useRouter();
+
+const handleLogin = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: adminUsername.value,
+        password: adminPassword.value,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('로그인 실패');
+    }
+
+    const data = await response.json();
+    const token = data.token;
+    localStorage.setItem('jwtToken', token); // JWT 토큰 저장
+
+    // 로그인 성공 시 AdminMainPage로 이동
+    router.push('/admin-main');
+  } catch (error) {
+    errorMessage.value = error.message;
+  }
 };
 </script>
+
 
 <style scoped>
 .login-container {
