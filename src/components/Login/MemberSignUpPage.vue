@@ -38,7 +38,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // vue-router 사용
+import { useRouter } from 'vue-router';
+import Swal from "sweetalert2"; // vue-router 사용
 
 const router = useRouter(); // useRouter 훅을 사용하여 라우터 인스턴스 가져오기
 
@@ -70,25 +71,41 @@ const handleSubmit = async () => {
       throw new Error('회원 가입 실패');
     }
 
-    // JSON이 아닌 경우 대비해서 text로 받아서 처리
+    // ✅ 응답을 먼저 텍스트로 받아옴
     const responseText = await response.text();
+    let message;
+
     try {
-      // JSON 형식이라면 파싱
+      // ✅ JSON 형식이면 파싱
       const data = JSON.parse(responseText);
-      alert(data.message);
+      message = data.message;
     } catch {
-      // JSON이 아니라면 그대로 출력
-      alert(responseText);
+      // ✅ JSON이 아니면 그대로 사용
+      message = responseText;
     }
 
-    // 회원가입 후 페이지 이동
-    router.push('/member-main');
+    // ✅ 성공 메시지 출력
+    await Swal.fire({
+      icon: 'success',
+      title: '등록 성공!',
+      text: message || '환영합니다. 해당 계정으로 로그인해주시길 바랍니다.',
+      confirmButtonText: '확인'
+    });
+
+    // ✅ 로그인 페이지로 이동
+    router.push('/user-login');
+
   } catch (error) {
     console.error(error);
-    alert('회원가입 중 오류가 발생했습니다.');
+
+    // ✅ 실패 메시지 출력
+    Swal.fire({
+      icon: 'error',
+      title: '회원가입 실패',
+      text: error.message || '회원가입 중 오류가 발생했습니다.'
+    });
   }
 };
-
 
 </script>
 
