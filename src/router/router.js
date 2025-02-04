@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import NoticeList from '@/components/Notice/NoticeList.vue';
 import MainLogin from "@/components/Login/MainLogin.vue";
-import MemberLogin from "@/components/Login/MemberLogin.vue"; // 일반 회원 로그인
+import MemberLogin from "@/components/Login/MemberLogin.vue";
 import AdminLogin from "@/components/Login/AdminLogin.vue";
-import AdminMainPage from "@/components/Admin/AdminMainPage.vue"; // 관리자 메인 페이지
-import MemberMainPage from "@/components/Member/MemberMainPage.vue"; // 일반 회원 메인 페이지
+import AdminMainPage from "@/components/Admin/AdminMainPage.vue";
+import MemberMainPage from "@/components/Member/MemberMainPage.vue";
+import MemberSignUpPage from "@/components/Login/MemberSignUpPage.vue"; // MemberSignUpPage 임포트 추가
 
 const routes = [
     {
@@ -20,7 +21,7 @@ const routes = [
     {
         path: '/user-login',
         name: '일반 회원 로그인창',
-        component: MemberLogin, // 회원 로그인 페이지
+        component: MemberLogin,
     },
     {
         path: '/admin-login',
@@ -36,9 +37,14 @@ const routes = [
     {
         path: '/member-main',
         name: '회원 메인 페이지',
-        component: MemberMainPage, // 회원 메인 페이지 추가
-        meta: { requiresAuth: true }, // 인증이 필요한 페이지
+        component: MemberMainPage,
+        meta: { requiresAuth: true },
     },
+    {
+        path: '/member-signup', // 회원가입 페이지 라우트 추가
+        name: '회원가입 페이지',
+        component: MemberSignUpPage,
+    }
 ];
 
 const router = createRouter({
@@ -46,12 +52,11 @@ const router = createRouter({
     routes,
 });
 
-// 라우터 가드: 인증이 필요한 페이지는 로그인되어 있지 않으면 로그인 페이지로 리다이렉트
 router.beforeEach((to, from, next) => {
-    const isAuthenticated = !!localStorage.getItem('jwtToken'); // JWT 토큰 확인
+    const isAuthenticated = !!localStorage.getItem('jwtToken');
 
     if (to.meta.requiresAuth && !isAuthenticated) {
-        next('/user-login'); // 인증되지 않은 사용자 로그인 페이지로 리다이렉트
+        next('/user-login');
     } else {
         next();
     }

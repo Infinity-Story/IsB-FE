@@ -13,10 +13,14 @@
       <router-link to="/user-login">
         <button class="login-button user-btn">일반 회원 로그인</button>
       </router-link>
+
+      <router-link to="/member-signup">
+        <button class="login-button signup-btn">회원가입</button>
+      </router-link>
     </div>
   </div>
 </template>
-<!---->
+
 <script>
 export default {
   name: 'HomePage',
@@ -96,4 +100,12 @@ export default {
   background-color: #e59400;
 }
 
+.signup-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.signup-btn:hover {
+  background-color: #218838;
+}
 </style>
