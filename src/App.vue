@@ -1,22 +1,24 @@
 <template>
   <div id="app">
-    <!-- 기본 페이지는 '/' 경로일 때만 "야스"가 보이고, 다른 페이지에서는 내용이 변경됨 -->
-    <h1 v-if="$route.path === '/'"></h1>
-    <router-view></router-view> <!-- 라우트된 컴포넌트를 여기에 표시 -->
+    <Header v-if="$route.meta.requiresAuth" />
+    <router-view></router-view>
+    <Footer v-if="$route.meta.requiresAuth" />
   </div>
 </template>
 
 <script>
-import MainLogin from "@/components/Login/MainLogin.vue";
+import Header from "@/components/PageEnv/Header.vue";
+import Footer from "@/components/PageEnv/Footer.vue";
 
 export default {
   name: 'App',
   components: {
-    MainLogin,
+    Header,
+    Footer
   }
 };
 </script>
 
-<style scoped>
-/* 스타일을 여기에 추가할 수 있습니다. */
+<style>
+/* 앱 전체 스타일 */
 </style>
