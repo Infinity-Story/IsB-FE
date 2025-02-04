@@ -99,7 +99,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: #f8f9fa;
+  background: #ffffff;
 }
 
 .title-section {
@@ -108,7 +108,7 @@ const handleSubmit = async () => {
 }
 
 .main-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #007bff;
 }
@@ -120,7 +120,7 @@ const handleSubmit = async () => {
 
 .signup-form {
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   background-color: white;
   padding: 20px;
   border-radius: 8px;
@@ -138,21 +138,27 @@ const handleSubmit = async () => {
 
 .input-group input {
   width: 100%;
+  max-width: 300px; /* 입력 필드 길이 조정 */
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  display: block;
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 .submit-btn {
-  width: 100%;
+  width: 30%;
+  max-width: 300px; /* 버튼 길이 조정 */
   padding: 12px;
-  font-size: 1.1rem;
+  font-size: 1rem; /* 버튼 크기 조정 */
   background-color: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: block;
+  margin: 10px auto 0; /* 중앙 정렬 */
 }
 
 .submit-btn:hover {
