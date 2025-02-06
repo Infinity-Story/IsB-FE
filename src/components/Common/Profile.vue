@@ -1,83 +1,73 @@
 <template>
   <div class="profile-container">
-    <h2>프로필 수정</h2>
-    <div class="profile-img-container">
-      <img :src="profileImage" alt="프로필 이미지" class="profile-img" />
-    </div>
-    <input type="file" ref="fileInput" @change="handleFileChange" />
-    <button @click="updateProfileImage" class="update-btn">프로필 사진 변경</button>
-    <button @click="deleteProfileImage" class="delete-btn">프로필 사진 삭제</button>
+    <h2>프로필 정보</h2>
+
+    <label>이름</label>
+    <input v-model="member.memberName" type="text" disabled />
+
+    <label>가입일</label>
+    <input v-model="member.memberEnrollDate" type="text" disabled />
+
+    <label>이메일</label>
+    <input v-model="member.memberEmail" type="email" disabled />
+
+    <label>전화번호</label>
+    <input v-model="member.memberPhone" type="text" disabled />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
-const profileImage = ref('/default-profile.png');
-const fileInput = ref(null);
-
-onMounted(() => {
-  fetchUserProfile();
+const props = defineProps({
+  memberId: {
+    type: String,
+    required: true,
+  },
 });
 
-// 사용자 프로필 정보 가져오기
-const fetchUserProfile = async () => {
+const member = ref({
+  memberName: '',
+  memberEnrollDate: '',
+  memberEmail: '',
+  memberPhone: '',
+});
+
+const fetchMemberProfile = async () => {
   try {
-    const token = localStorage.getItem('jwtToken');
-    const response = await axios.get('http://localhost:5000/user/me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    });
-    profileImage.value = response.data.profileImage || '/default-profile.png';
+    const response = await axios.get(`http://localhost:5000/user/member/${props.memberId}`);
+    member.value = response.data;
   } catch (error) {
-    console.error('프로필 정보 가져오기 실패:', error);
+    console.error('회원 정보 불러오기 실패:', error);
   }
 };
 
-// 파일 선택 후 프로필 사진 변경
-const handleFileChange = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const formData = new FormData();
-    formData.append('profileImage', file);
-    updateProfileImage(formData);
-  }
-};
-
-// 프로필 이미지 업데이트
-const updateProfileImage = async (formData) => {
-  try {
-    const token = localStorage.getItem('jwtToken');
-    const response = await axios.put('http://localhost:5000/user/profile', formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    profileImage.value = response.data.profileImage;
-    localStorage.setItem('profileImage', profileImage.value);
-  } catch (error) {
-    console.error('프로필 이미지 업데이트 실패:', error);
-  }
-};
-
-// 프로필 이미지 삭제
-const deleteProfileImage = async () => {
-  try {
-    const token = localStorage.getItem('jwtToken');
-    await axios.delete('http://localhost:5000/user/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    profileImage.value = '/default-profile.png';  // 기본 이미지로 변경
-    localStorage.setItem('profileImage', profileImage.value);
-  } catch (error) {
-    console.error('프로필 이미지 삭제 실패:', error);
-  }
-};
+onMounted(fetchMemberProfile);
 </script>
+
+<style scoped>
+.profile-container {
+  width: 400px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+input {
+  width: 80%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+</style>

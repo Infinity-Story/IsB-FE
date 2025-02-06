@@ -19,6 +19,7 @@ const router = useRouter();
 const isAuthenticated = ref(!!localStorage.getItem('jwtToken'));
 const username = ref('');
 const userProfileImage = ref('/default-profile.png');
+const memberId = ref('');
 
 onMounted(() => {
   if (isAuthenticated.value) {
@@ -34,10 +35,18 @@ const fetchUserInfo = async () => {
         Authorization: `Bearer ${token}`,
       }
     });
-    username.value = response.data.username || '사용자';
+    username.value = response.data.username || '사용자'; // username이 memberId
     userProfileImage.value = '/default-profile.png';
     localStorage.setItem('username', username.value);
     localStorage.setItem('profileImage', userProfileImage.value);
+
+    // username을 사용하여 해당 유저의 프로필 정보 조회
+    const memberInfoResponse = await axios.get(`http://localhost:5000/user/member/${username.value}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    memberId.value = memberInfoResponse.data.memberId;  // memberId를 가져옴
   } catch (error) {
     console.error('사용자 정보 로드 실패:', error);
     logout();
@@ -45,7 +54,7 @@ const fetchUserInfo = async () => {
 };
 
 const goToProfile = () => {
-  router.push('/profile');
+  router.push(`/profile/${memberId.value}`);
 };
 
 const logout = () => {
