@@ -12,19 +12,41 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter();
 const isAuthenticated = ref(!!localStorage.getItem('jwtToken'));
 const username = ref('');
 const userProfileImage = ref('/default-profile.png'); // 기본 이미지
 
+// 페이지가 마운트될 때 실행
 onMounted(() => {
   if (isAuthenticated.value) {
-    username.value = localStorage.getItem('username') || '사용자';
-    userProfileImage.value = localStorage.getItem('profileImage') || '/default-profile.png';
+    fetchUserInfo();
   }
 });
 
+// 서버에서 사용자 정보 받아오는 함수
+const fetchUserInfo = async () => {
+  try {
+    const token = localStorage.getItem('jwtToken');
+    const response = await axios.get('http://localhost:5000/user/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,  // Bearer 토큰 헤더로 전송
+      }
+    });
+    username.value = response.data.username || '사용자';
+    userProfileImage.value = '/default-profile.png'; // 프로필 이미지를 서버에서 제공하면 여기서 업데이트
+    localStorage.setItem('username', username.value);
+    localStorage.setItem('profileImage', userProfileImage.value);
+  } catch (error) {
+    console.error('사용자 정보 로드 실패:', error);
+    // 사용자 정보 로드 실패 시 로그아웃 처리
+    logout();
+  }
+};
+
+// 로그아웃 처리 함수
 const logout = () => {
   localStorage.removeItem('jwtToken');
   localStorage.removeItem('username');
