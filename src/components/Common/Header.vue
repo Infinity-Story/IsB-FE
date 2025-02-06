@@ -4,6 +4,7 @@
     <div v-if="isAuthenticated" class="profile-section">
       <img :src="userProfileImage" alt="프로필" class="profile-img" />
       <span class="username">{{ username }}</span>
+      <button @click="goToProfile" class="profile-btn">프로필 설정</button>
       <button @click="logout" class="logout-btn">로그아웃</button>
     </div>
   </header>
@@ -17,36 +18,36 @@ import axios from 'axios';
 const router = useRouter();
 const isAuthenticated = ref(!!localStorage.getItem('jwtToken'));
 const username = ref('');
-const userProfileImage = ref('/default-profile.png'); // 기본 이미지
+const userProfileImage = ref('/default-profile.png');
 
-// 페이지가 마운트될 때 실행
 onMounted(() => {
   if (isAuthenticated.value) {
     fetchUserInfo();
   }
 });
 
-// 서버에서 사용자 정보 받아오는 함수
 const fetchUserInfo = async () => {
   try {
     const token = localStorage.getItem('jwtToken');
     const response = await axios.get('http://localhost:5000/user/me', {
       headers: {
-        Authorization: `Bearer ${token}`,  // Bearer 토큰 헤더로 전송
+        Authorization: `Bearer ${token}`,
       }
     });
     username.value = response.data.username || '사용자';
-    userProfileImage.value = '/default-profile.png'; // 프로필 이미지를 서버에서 제공하면 여기서 업데이트
+    userProfileImage.value = '/default-profile.png';
     localStorage.setItem('username', username.value);
     localStorage.setItem('profileImage', userProfileImage.value);
   } catch (error) {
     console.error('사용자 정보 로드 실패:', error);
-    // 사용자 정보 로드 실패 시 로그아웃 처리
     logout();
   }
 };
 
-// 로그아웃 처리 함수
+const goToProfile = () => {
+  router.push('/profile');
+};
+
 const logout = () => {
   localStorage.removeItem('jwtToken');
   localStorage.removeItem('username');
