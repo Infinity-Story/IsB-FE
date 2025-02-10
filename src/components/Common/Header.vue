@@ -2,7 +2,7 @@
   <header class="header">
     <div class="logo">ISB</div>
     <div v-if="isAuthenticated" class="profile-section">
-      <img :src="userProfileImage" alt="프로필" class="profile-img" />
+      <img :src="userProfileImage" class="profile-img" />
       <span class="username">{{ username }}</span>
       <button @click="goToProfile" class="profile-btn">프로필 설정</button>
       <button @click="logout" class="logout-btn">로그아웃</button>
@@ -18,14 +18,8 @@ import axios from 'axios';
 const router = useRouter();
 const isAuthenticated = ref(!!localStorage.getItem('jwtToken'));
 const username = ref('');
-const userProfileImage = ref('/default-profile.png');
+const userProfileImage = ref('');
 const memberId = ref('');
-
-onMounted(() => {
-  if (isAuthenticated.value) {
-    fetchUserInfo();
-  }
-});
 
 const fetchUserInfo = async () => {
   try {
@@ -35,18 +29,33 @@ const fetchUserInfo = async () => {
         Authorization: `Bearer ${token}`,
       }
     });
-    username.value = response.data.username || '사용자'; // username이 memberId
-    userProfileImage.value = '/default-profile.png';
-    localStorage.setItem('username', username.value);
-    localStorage.setItem('profileImage', userProfileImage.value);
 
-    // username을 사용하여 해당 유저의 프로필 정보 조회
+    console.log('User info from /me:', response.data);
+
+    // username 설정
+    username.value = response.data.username || '사용자';
+    localStorage.setItem('username', username.value);
+
+    // 회원 정보를 통해 profileImage 값 설정
     const memberInfoResponse = await axios.get(`http://localhost:5000/user/member/${username.value}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
     });
+
+    console.log('User info from /me:', memberInfoResponse.data);
+
+    const profileImage = memberInfoResponse.data.profileImage;
+    if (profileImage) {
+      userProfileImage.value = `http://localhost:5000/profile/image/${profileImage}`;  // 서버에서 이미지 경로를 받아서 표시
+    } else {
+      userProfileImage.value = '/default-profile.png';  // 기본 이미지
+    }
+
+    console.log('profileImage:', profileImage);
+
     memberId.value = memberInfoResponse.data.memberId;  // memberId를 가져옴
+    localStorage.setItem('profileImage', userProfileImage.value);  // 프로필 이미지도 로컬스토리지에 저장
   } catch (error) {
     console.error('사용자 정보 로드 실패:', error);
     logout();
@@ -64,6 +73,13 @@ const logout = () => {
   isAuthenticated.value = false;
   router.push('/user-login');
 };
+
+// 페이지 로드 시, 사용자 정보를 가져옴
+onMounted(() => {
+  if (isAuthenticated.value) {
+    fetchUserInfo();
+  }
+});
 </script>
 
 <style scoped>
