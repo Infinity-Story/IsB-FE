@@ -48,9 +48,15 @@ const routes = [
     },
     {
         path: '/profile/:memberId',
-        name: '프로필 설정 페이지',
+        name: 'profileMember',
         component: Profile,
-        props: true,
+        props: true,  // 이 옵션으로 파라미터를 props로 전달
+    },
+    {
+        path: '/profile/:adminId',
+        name: 'profileAdmin',
+        component: Profile,
+        props: true,  // 이 옵션으로 파라미터를 props로 전달
     }
 ];
 

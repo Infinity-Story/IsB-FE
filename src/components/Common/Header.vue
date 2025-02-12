@@ -20,6 +20,7 @@ const isAuthenticated = ref(!!localStorage.getItem('jwtToken'));
 const username = ref('');
 const userProfileImage = ref('');
 const memberId = ref('');
+const adminId = ref('');
 const userType = ref('');
 
 const fetchUserInfo = async () => {
@@ -31,13 +32,12 @@ const fetchUserInfo = async () => {
       return;
     }
 
-    // 1️⃣ 현재 로그인한 사용자 정보 가져오기 (username)
+    // 사용자 정보 가져오기
     const userResponse = await axios.get('http://localhost:5000/user/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log('🔹 /user/me 응답:', userResponse.data);
-    username.value = userResponse.data.username;  // ref() 변수 사용
+    username.value = userResponse.data.username;
 
     if (!username.value) {
       console.error('❌ username을 가져올 수 없습니다.');
@@ -47,13 +47,12 @@ const fetchUserInfo = async () => {
 
     localStorage.setItem('username', username.value);
 
-    // 2️⃣ 사용자 역할(Role) 확인 (Member or Admin)
+    // 사용자 역할 확인 (Member or Admin)
     const roleResponse = await axios.get('http://localhost:5000/user/role', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log('🔹 /user/role 응답:', roleResponse.data);
-    userType.value = roleResponse.data.role; // ref() 변수 사용
+    userType.value = roleResponse.data.role;
 
     if (!userType.value) {
       console.error('❌ userType을 가져올 수 없습니다.');
@@ -63,7 +62,7 @@ const fetchUserInfo = async () => {
 
     localStorage.setItem('userType', userType.value);
 
-    // 3️⃣ userType에 따라 회원 정보 API 호출
+    // 역할에 따라 사용자 정보 API 호출
     let userInfoUrl = '';
     if (userType.value === 'ROLE_MEMBER') {
       userInfoUrl = `http://localhost:5000/user/member/${username.value}`;
@@ -78,9 +77,6 @@ const fetchUserInfo = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log('🔹 회원 상세 정보 응답:', userInfoResponse.data);
-
-    // 4️⃣ 프로필 이미지 설정
     const profileImage = userInfoResponse.data.profileImage;
     if (profileImage) {
       userProfileImage.value = `http://localhost:5000/profile/image/${profileImage}`;
@@ -88,17 +84,16 @@ const fetchUserInfo = async () => {
       userProfileImage.value = '/default-profile.png';
     }
 
-    console.log('🔹 프로필 이미지:', userProfileImage.value);
-
-    // 5️⃣ memberId 또는 adminCode 저장 (각 역할별)
+    // memberId 또는 adminId 저장
     if (userType.value === 'ROLE_MEMBER') {
       memberId.value = userInfoResponse.data.memberId;
     } else if (userType.value === 'ROLE_ADMIN') {
-      memberId.value = userInfoResponse.data.adminCode;
+      adminId.value = userInfoResponse.data.adminId;  // adminId 저장
     }
 
     localStorage.setItem('profileImage', userProfileImage.value);
     localStorage.setItem('memberId', memberId.value);
+    localStorage.setItem('adminId', adminId.value);  // adminId 저장
 
   } catch (error) {
     console.error('🚨 사용자 정보 로드 실패:', error);
@@ -107,7 +102,13 @@ const fetchUserInfo = async () => {
 };
 
 const goToProfile = () => {
-  router.push(`/profile/${memberId.value}`);
+  if (userType.value === 'ROLE_MEMBER' && memberId.value) {
+    router.push({ name: 'profileMember', params: { memberId: memberId.value } });
+  } else if (userType.value === 'ROLE_ADMIN' && adminId.value) {
+    router.push({ name: 'profileAdmin', params: { adminId: adminId.value } });
+  } else {
+    console.error('ID가 없습니다.');
+  }
 };
 
 const logout = () => {
@@ -116,6 +117,7 @@ const logout = () => {
   localStorage.removeItem('profileImage');
   localStorage.removeItem('userType');
   localStorage.removeItem('memberId');
+  localStorage.removeItem('adminId');  // adminId도 삭제
   isAuthenticated.value = false;
   router.push('/');
 };

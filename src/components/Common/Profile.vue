@@ -3,48 +3,82 @@
     <h2>프로필 정보</h2>
 
     <label>이름</label>
-    <input v-model="member.memberName" type="text" disabled />
+    <input v-model="user.name" type="text" disabled />
 
     <label>가입일</label>
-    <input v-model="member.memberEnrollDate" type="text" disabled />
+    <input v-model="user.enrollDate" type="text" disabled />
 
     <label>이메일</label>
-    <input v-model="member.memberEmail" type="email" disabled />
+    <input v-model="user.email" type="email" disabled />
 
     <label>전화번호</label>
-    <input v-model="member.memberPhone" type="text" disabled />
+    <input v-model="user.phone" type="text" disabled />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 
-const props = defineProps({
-  memberId: {
-    type: String,
-    required: true,
-  },
+const route = useRoute();
+const userId = route.params.memberId || route.params.adminId;  // memberId 또는 adminId를 받아옴
+
+const user = ref({
+  name: '',
+  enrollDate: '',
+  email: '',
+  phone: '',
 });
 
-const member = ref({
-  memberName: '',
-  memberEnrollDate: '',
-  memberEmail: '',
-  memberPhone: '',
-});
-
-const fetchMemberProfile = async () => {
+const fetchUserProfile = async () => {
   try {
-    const response = await axios.get(`http://localhost:5000/user/member/${props.memberId}`);
-    member.value = response.data;
+    let userInfoUrl = '';
+
+    // memberId가 있는 경우
+    if (route.params.memberId) {
+      userInfoUrl = `http://localhost:5000/user/member/${route.params.memberId}`;
+    }
+    // adminId가 있는 경우
+    else if (route.params.adminId) {
+      userInfoUrl = `http://localhost:5000/user/admin/${route.params.adminId}`;
+    }
+
+    // JWT 토큰을 Authorization 헤더에 포함
+    const token = localStorage.getItem('jwtToken');
+    const response = await axios.get(userInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,  // 헤더에 토큰 포함
+      },
+    });
+
+    // 받아온 데이터에서 각 필드를 user 객체의 필드에 할당
+    if (response.data) {
+      // 조건에 따라 필드를 다르게 매핑
+      if (route.params.memberId) {
+        // member일 때
+        user.value.name = response.data.memberName || '';  // memberName
+        user.value.enrollDate = response.data.memberEnrollDate || '';  // memberEnrollDate
+        user.value.email = response.data.memberEmail || '';  // memberEmail
+        user.value.phone = response.data.memberPhone || '';  // memberPhone
+      } else if (route.params.adminId) {
+        // admin일 때
+        user.value.name = response.data.adminName || '';  // adminName
+        user.value.enrollDate = response.data.adminEnrollDate || '';  // adminEnrollDate
+        user.value.email = response.data.adminEmail || '';  // adminEmail
+        user.value.phone = response.data.adminPhone || '';  // adminPhone
+      }
+    }
+
   } catch (error) {
     console.error('회원 정보 불러오기 실패:', error);
   }
 };
 
-onMounted(fetchMemberProfile);
+onMounted(fetchUserProfile);
 </script>
+
+
 
 <style scoped>
 .profile-container {
