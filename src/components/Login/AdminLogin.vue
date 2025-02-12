@@ -61,13 +61,13 @@ const handleLogin = async () => {
     localStorage.setItem('jwtToken', token); // JWT 토큰 저장
 
     // 로그인 성공 시 AdminMainPage로 이동
+    // 토큰이 저장된 후에 push 호출
     router.push('/admin-main');
   } catch (error) {
     errorMessage.value = error.message;
   }
 };
 </script>
-
 
 <style scoped>
 .login-container {

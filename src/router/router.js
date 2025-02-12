@@ -65,7 +65,12 @@ router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth && !isAuthenticated) {
         next('/user-login');
     } else {
-        next();
+        // admin-token 검증 로직 추가
+        if (to.path === '/admin-main' && !isAuthenticated) {
+            next('/admin-login'); // 인증되지 않은 경우 관리자 페이지로 리다이렉트
+        } else {
+            next();
+        }
     }
 });
 
