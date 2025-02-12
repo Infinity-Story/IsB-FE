@@ -2,6 +2,10 @@
   <div class="profile-container">
     <h2>프로필 정보</h2>
 
+    <div class="profile-image">
+      <img :src="`http://localhost:5000/profile/image/${user.profileImage}`" alt="Profile Image" />
+    </div>
+
     <label>이름</label>
     <input v-model="user.name" type="text" disabled />
 
@@ -22,24 +26,21 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
-const userId = route.params.memberId || route.params.adminId;  // memberId 또는 adminId를 받아옴
 
 const user = ref({
   name: '',
   enrollDate: '',
   email: '',
   phone: '',
+  profileImage: '',
 });
 
 const fetchUserProfile = async () => {
   try {
     let userInfoUrl = '';
-
-    // memberId가 있는 경우
     if (route.params.memberId) {
       userInfoUrl = `http://localhost:5000/user/member/${route.params.memberId}`;
     }
-    // adminId가 있는 경우
     else if (route.params.adminId) {
       userInfoUrl = `http://localhost:5000/user/admin/${route.params.adminId}`;
     }
@@ -52,6 +53,8 @@ const fetchUserProfile = async () => {
       },
     });
 
+    console.log('회원 정보:', response.data);
+
     // 받아온 데이터에서 각 필드를 user 객체의 필드에 할당
     if (response.data) {
       // 조건에 따라 필드를 다르게 매핑
@@ -61,12 +64,14 @@ const fetchUserProfile = async () => {
         user.value.enrollDate = response.data.memberEnrollDate || '';  // memberEnrollDate
         user.value.email = response.data.memberEmail || '';  // memberEmail
         user.value.phone = response.data.memberPhone || '';  // memberPhone
+        user.value.profileImage = response.data.profileImage || '/default-profile.png';  // member의 profileImage
       } else if (route.params.adminId) {
         // admin일 때
         user.value.name = response.data.adminName || '';  // adminName
         user.value.enrollDate = response.data.adminEnrollDate || '';  // adminEnrollDate
         user.value.email = response.data.adminEmail || '';  // adminEmail
         user.value.phone = response.data.adminPhone || '';  // adminPhone
+        user.value.profileImage = response.data.profileImage || '/default-profile.png';  // admin의 profileImage
       }
     }
 
@@ -78,8 +83,6 @@ const fetchUserProfile = async () => {
 onMounted(fetchUserProfile);
 </script>
 
-
-
 <style scoped>
 .profile-container {
   width: 400px;
@@ -88,6 +91,7 @@ onMounted(fetchUserProfile);
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #fff;
+  text-align: center;
 }
 
 label {
@@ -103,5 +107,23 @@ input {
   border: 1px solid #ccc;
   border-radius: 4px;
   background: #f5f5f5;
+}
+
+.profile-image {
+  margin: 20px auto; /* 이미지 여백 */
+  width: 150px; /* 이미지 크기 */
+  height: 150px; /* 이미지 크기 */
+  border-radius: 50%; /* 원형 틀 만들기 */
+  overflow: hidden; /* 넘치는 부분 잘라내기 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-image img {
+  width: 100%; /* 이미지가 컨테이너에 맞게 꽉 차도록 */
+  height: 100%; /* 이미지가 컨테이너에 맞게 꽉 차도록 */
+  object-fit: cover; /* 이미지 비율 유지하며 잘리도록 */
+  border-radius: 50%; /* 이미지도 원형으로 만들기 */
 }
 </style>
