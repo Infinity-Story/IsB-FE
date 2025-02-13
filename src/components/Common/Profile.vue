@@ -17,15 +17,18 @@
 
     <label>전화번호</label>
     <input v-model="user.phone" type="text" disabled />
+
+    <button @click="goToModifyProfile">프로필 수정</button>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 
 const user = ref({
   name: '',
@@ -80,6 +83,15 @@ const fetchUserProfile = async () => {
   }
 };
 
+const goToModifyProfile = () => {
+  // 프로필 수정 페이지로 이동 (회원ID 또는 관리자ID 전달)
+  if (route.params.memberId) {
+    router.push({ name: 'modifyProfileMember', params: { memberId: route.params.memberId } });
+  } else if (route.params.adminId) {
+    router.push({ name: 'modifyProfileAdmin', params: { adminId: route.params.adminId } });
+  }
+};
+
 onMounted(fetchUserProfile);
 </script>
 
@@ -126,4 +138,15 @@ input {
   object-fit: cover; /* 이미지 비율 유지하며 잘리도록 */
   border-radius: 50%; /* 이미지도 원형으로 만들기 */
 }
+button {
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 30%;
+}
+
 </style>

@@ -6,7 +6,8 @@ import AdminLogin from "@/components/Login/AdminLogin.vue";
 import AdminMainPage from "@/components/Admin/AdminMainPage.vue";
 import MemberMainPage from "@/components/Member/MemberMainPage.vue";
 import MemberSignUpPage from "@/components/Login/MemberSignUpPage.vue";
-import Profile from "@/components/Common/Profile.vue"; // MemberSignUpPage 임포트 추가
+import Profile from "@/components/Common/Profile.vue";
+import ModifyProfile from "@/components/Common/ModifyProfile.vue"; // MemberSignUpPage 임포트 추가
 
 const routes = [
     {
@@ -57,6 +58,18 @@ const routes = [
         name: 'profileAdmin',
         component: Profile,
         props: true,  // 이 옵션으로 파라미터를 props로 전달
+    },
+    {
+        path: '/modify-profile/member/:memberId',
+        name: 'modifyProfileMember',
+        component: ModifyProfile,
+        props: true,
+    },
+    {
+        path: '/modify-profile/admin/:adminId',
+        name: 'modifyProfileAdmin',
+        component: ModifyProfile,
+        props: true,
     }
 ];
 
