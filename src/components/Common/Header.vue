@@ -1,10 +1,10 @@
 <template>
   <header class="header">
-    <div class="logo">ISB</div>
+    <div class="logo" @click="goToHome" style="cursor: pointer">ISB</div>
     <div v-if="isAuthenticated" class="profile-section">
       <img :src="userProfileImage" class="profile-img" />
       <span class="username">{{ username }}</span>
-      <button @click="goToProfile" class="profile-btn">프로필 설정</button>
+      <button @click="goToProfile" class="profile-btn">내 프로필</button>
       <button @click="logout" class="logout-btn">로그아웃</button>
     </div>
   </header>
@@ -32,68 +32,44 @@ const fetchUserInfo = async () => {
       return;
     }
 
-    // 사용자 정보 가져오기
     const userResponse = await axios.get('http://localhost:5000/user/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     username.value = userResponse.data.username;
 
-    if (!username.value) {
-      console.error('❌ username을 가져올 수 없습니다.');
-      logout();
-      return;
-    }
-
-    localStorage.setItem('username', username.value);
-
-    // 사용자 역할 확인 (Member or Admin)
     const roleResponse = await axios.get('http://localhost:5000/user/role', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     userType.value = roleResponse.data.role;
-
-    if (!userType.value) {
-      console.error('❌ userType을 가져올 수 없습니다.');
-      logout();
-      return;
-    }
-
     localStorage.setItem('userType', userType.value);
 
-    // 역할에 따라 사용자 정보 API 호출
     let userInfoUrl = '';
     if (userType.value === 'ROLE_MEMBER') {
       userInfoUrl = `http://localhost:5000/user/member/${username.value}`;
     } else if (userType.value === 'ROLE_ADMIN') {
       userInfoUrl = `http://localhost:5000/user/admin/${username.value}`;
-    } else {
-      console.error('❌ Invalid userType:', userType.value);
-      return;
     }
 
     const userInfoResponse = await axios.get(userInfoUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    const profileImage = userInfoResponse.data.profileImage;
-    if (profileImage) {
-      userProfileImage.value = `http://localhost:5000/profile/image/${profileImage}`;
-    } else {
-      userProfileImage.value = '/default-profile.png';
-    }
+    userProfileImage.value = userInfoResponse.data.profileImage ? `http://localhost:5000/profile/image/${userInfoResponse.data.profileImage}` : '/default-profile.png';
 
     // memberId 또는 adminId 저장
     if (userType.value === 'ROLE_MEMBER') {
       memberId.value = userInfoResponse.data.memberId;
+      localStorage.setItem('memberId', memberId.value);
     } else if (userType.value === 'ROLE_ADMIN') {
-      adminId.value = userInfoResponse.data.adminId;  // adminId 저장
+      adminId.value = userInfoResponse.data.adminId;
+      localStorage.setItem('adminId', adminId.value);  // adminId 저장
     }
 
     localStorage.setItem('profileImage', userProfileImage.value);
-    localStorage.setItem('memberId', memberId.value);
-    localStorage.setItem('adminId', adminId.value);  // adminId 저장
+    localStorage.setItem('username', username.value);
+
 
   } catch (error) {
     console.error('🚨 사용자 정보 로드 실패:', error);
@@ -108,6 +84,15 @@ const goToProfile = () => {
     router.push({ name: 'profileAdmin', params: { adminId: adminId.value } });
   } else {
     console.error('ID가 없습니다.');
+  }
+};
+const goToHome = () => {
+  if (userType.value === 'ROLE_MEMBER') {
+    router.push({ name: 'MemberMainPage' });
+  } else if (userType.value === 'ROLE_ADMIN') {
+    router.push({ name: 'AdminMainPage' });
+  } else {
+    router.push('/'); // 기본적으로 로그인 페이지로 이동
   }
 };
 
@@ -137,6 +122,8 @@ onMounted(() => {
   padding: 15px 20px;
   background: #ffffff;
   color: black;
+  z-index: 10;
+  margin-bottom: 40px;
 }
 
 .logo {

@@ -42,8 +42,8 @@ const user = ref({
 
 const selectedImage = ref(null); // 선택한 이미지 미리보기
 
-// 사용자 프로필 가져오기
 const fetchUserProfile = async () => {
+  console.log('Route Params:', route.params);
   try {
     let userInfoUrl = "";
     if (route.params.memberId) {
@@ -54,10 +54,10 @@ const fetchUserProfile = async () => {
 
     const token = localStorage.getItem("jwtToken");
     const response = await axios.get(userInfoUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
+
+    console.log("✅ 프로필 데이터 가져오기 성공:", response.data);
 
     if (response.data) {
       if (route.params.memberId) {
@@ -75,9 +75,11 @@ const fetchUserProfile = async () => {
       }
     }
   } catch (error) {
-    console.error("회원 정보 불러오기 실패:", error);
+    console.error("❌ 회원 정보 불러오기 실패:", error.response?.status, error.response?.data);
+    alert(`회원 정보 조회 실패: ${error.response?.status}`);
   }
 };
+
 
 // 이미지 선택 핸들러
 const handleImageUpload = (event) => {
@@ -103,12 +105,18 @@ const updateProfile = async () => {
       updateUserUrl = `http://localhost:5000/admin/update/${user.value.adminCode}`;
     }
 
-    // 1️⃣ 프로필 정보 업데이트
-    const updatedData = {
-      memberName: user.value.name || null,
-      memberEmail: user.value.email || null,
-      memberPhone: user.value.phone || null,
-    };
+    // 프로필 정보 업데이트
+    const updatedData = user.value.memberCode
+        ? {
+          memberName: user.value.name || null,
+          memberEmail: user.value.email || null,
+          memberPhone: user.value.phone || null,
+        }
+        : {
+          adminName: user.value.name || null,
+          adminEmail: user.value.email || null,
+          adminPhone: user.value.phone || null,
+        };
 
     await axios.put(updateUserUrl, updatedData, {
       headers: {
@@ -116,7 +124,7 @@ const updateProfile = async () => {
       },
     });
 
-    // 2️⃣ 이미지 업로드 (선택된 경우)
+    // 이미지 업로드
     if (selectedImage.value) {
       const formData = new FormData();
       formData.append("image", document.getElementById("fileInput").files[0]);
@@ -136,13 +144,14 @@ const updateProfile = async () => {
     }
 
     alert("프로필이 수정되었습니다.");
-    await fetchUserProfile();
-    router.push(`/profile/${route.params.memberId || route.params.adminId}`);
+    await fetchUserProfile(); // 수정된 프로필 정보를 바로 가져오기
+    router.push(`/profile/${route.params.memberId || route.params.adminId}`); // 뒤로가기 대신 정확한 경로로 이동
   } catch (error) {
     console.error("프로필 수정 실패:", error);
     alert(`서버 오류: ${error.response?.status || "알 수 없는 오류"}`);
   }
 };
+
 
 onMounted(fetchUserProfile);
 </script>

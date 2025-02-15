@@ -84,7 +84,6 @@ const fetchUserProfile = async () => {
 };
 
 const goToModifyProfile = () => {
-  // 프로필 수정 페이지로 이동 (회원ID 또는 관리자ID 전달)
   if (route.params.memberId) {
     router.push({ name: 'modifyProfileMember', params: { memberId: route.params.memberId } });
   } else if (route.params.adminId) {
@@ -92,7 +91,49 @@ const goToModifyProfile = () => {
   }
 };
 
-onMounted(fetchUserProfile);
+onMounted(() => {
+  const token = localStorage.getItem('jwtToken');
+  if (!token) {
+    console.error('JWT 토큰이 없습니다.');
+    return;
+  }
+
+  const storedAdminId = localStorage.getItem('adminId');
+  const storedMemberId = localStorage.getItem('memberId');
+  const userType = localStorage.getItem('userType');
+
+  let userInfoUrl = '';
+  if (userType === 'ROLE_MEMBER' && storedMemberId) {
+    userInfoUrl = `http://localhost:5000/user/member/${storedMemberId}`;
+  } else if (userType === 'ROLE_ADMIN' && storedAdminId) {
+    userInfoUrl = `http://localhost:5000/user/admin/${storedAdminId}`;
+  }
+
+  if (userInfoUrl) {
+    axios.get(userInfoUrl, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+        .then(response => {
+          const data = response.data;
+          if (userType === 'ROLE_MEMBER') {
+            user.value.name = data.memberName || '';
+            user.value.enrollDate = data.memberEnrollDate || '';
+            user.value.email = data.memberEmail || '';
+            user.value.phone = data.memberPhone || '';
+            user.value.profileImage = data.profileImage || '/default-profile.png';
+          } else if (userType === 'ROLE_ADMIN') {
+            user.value.name = data.adminName || '';
+            user.value.enrollDate = data.adminEnrollDate || '';
+            user.value.email = data.adminEmail || '';
+            user.value.phone = data.adminPhone || '';
+            user.value.profileImage = data.profileImage || '/default-profile.png';
+          }
+        })
+        .catch(error => {
+          console.error('회원 정보 불러오기 실패:', error);
+        });
+  }
+});
 </script>
 
 <style scoped>

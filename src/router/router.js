@@ -17,34 +17,34 @@ const routes = [
     },
     {
         path: '/notice/list',
-        name: '공지사항 전체 조회창',
+        name: 'NoticeList',
         component: NoticeList,
     },
     {
         path: '/user-login',
-        name: '일반 회원 로그인창',
+        name: 'MemberLogin',
         component: MemberLogin,
     },
     {
         path: '/admin-login',
-        name: '관리자 로그인창',
+        name: 'AdminLogin',
         component: AdminLogin,
     },
     {
         path: '/admin-main',
-        name: '관리자 메인 페이지',
+        name: 'AdminMainPage',
         component: AdminMainPage,
         meta: { requiresAuth: true },
     },
     {
         path: '/member-main',
-        name: '회원 메인 페이지',
+        name: 'MemberMainPage',
         component: MemberMainPage,
         meta: { requiresAuth: true },
     },
     {
         path: '/member-signup', // 회원가입 페이지 라우트 추가
-        name: '회원가입 페이지',
+        name: 'SignUp',
         component: MemberSignUpPage,
     },
     {
@@ -52,24 +52,28 @@ const routes = [
         name: 'profileMember',
         component: Profile,
         props: true,  // 이 옵션으로 파라미터를 props로 전달
+        meta: { requiresAuth: true },
     },
     {
         path: '/profile/:adminId',
         name: 'profileAdmin',
         component: Profile,
         props: true,  // 이 옵션으로 파라미터를 props로 전달
+        meta: { requiresAuth: true },
     },
     {
         path: '/modify-profile/member/:memberId',
         name: 'modifyProfileMember',
         component: ModifyProfile,
         props: true,
+        meta: { requiresAuth: true },
     },
     {
         path: '/modify-profile/admin/:adminId',
         name: 'modifyProfileAdmin',
         component: ModifyProfile,
         props: true,
+        meta: { requiresAuth: true },
     }
 ];
 
