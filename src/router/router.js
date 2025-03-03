@@ -7,7 +7,8 @@ import AdminMainPage from "@/components/Admin/AdminMainPage.vue";
 import MemberMainPage from "@/components/Member/MemberMainPage.vue";
 import MemberSignUpPage from "@/components/Login/MemberSignUpPage.vue";
 import Profile from "@/components/Common/Profile.vue";
-import ModifyProfile from "@/components/Common/ModifyProfile.vue"; // MemberSignUpPage 임포트 추가
+import ModifyProfile from "@/components/Common/ModifyProfile.vue";
+import FindId from "@/components/Login/FindId.vue";
 
 const routes = [
     {
@@ -74,6 +75,11 @@ const routes = [
         component: ModifyProfile,
         props: true,
         meta: { requiresAuth: true },
+    },
+    {
+        path: '/findId',
+        name: 'findId',
+        component: FindId,
     }
 ];
 

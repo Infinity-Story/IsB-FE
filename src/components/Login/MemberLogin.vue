@@ -25,6 +25,8 @@
         </div>
         <button type="submit" class="login-btn">로그인</button>
       </form>
+
+      <button @click="goToFindId" class="find-id-btn">아이디 찾기</button>
     </div>
   </div>
 </template>
@@ -63,6 +65,10 @@ const handleLogin = async () => {
     alert('로그인 실패: ' + error.message);
     console.error(error);
   }
+};
+
+const goToFindId = () => {
+  router.push('/findId'); // FindId 페이지로 이동
 };
 </script>
 
