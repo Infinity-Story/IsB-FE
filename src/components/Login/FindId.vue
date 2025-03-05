@@ -33,6 +33,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
 const memberEmail = ref('');
 const verificationCode = ref('');
@@ -56,9 +57,19 @@ const sendVerificationCode = async () => {
       throw new Error('인증번호 전송 실패');
     }
 
-    alert('인증번호가 이메일로 전송되었습니다.');
+    Swal.fire({
+      title: '아이디 찾기',
+      text: '인증번호가 이메일로 전송되었습니다.',
+      icon: 'success',
+      confirmButtonText: '확인',
+    });
   } catch (error) {
-    alert('인증번호 전송 실패: ' + error.message);
+    Swal.fire({
+      title: '아이디 찾기',
+      text: '유효하지 않은 이메일입니다. 다시 확인해주세요.',
+      icon: 'error',
+      confirmButtonText: '확인',
+    });
     console.error(error);
   }
 };
@@ -87,11 +98,21 @@ const handleFindId = async () => {
     }
 
     const data = await response.text();  // 응답을 텍스트로 처리
-    alert('아이디: ' + data); // 아이디를 화면에 표시
+    Swal.fire({
+      title: '아이디 찾기',
+      text: '회원님의 아이디는 ' + data + '입니다.',  // 아이디를 표시
+      icon: 'success',
+      confirmButtonText: '확인',
+    });
 
     router.push('/user-login'); // 로그인 페이지로 리다이렉트
   } catch (error) {
-    alert('아이디 찾기 실패: ' + error.message);
+    Swal.fire({
+      title: '아이디 찾기',
+      text: '인증번호가 일치하지 않습니다. 다시 확인해주세요.',
+      icon: 'error',
+      confirmButtonText: '확인',
+    });
     console.error(error);
   }
 };
@@ -100,7 +121,6 @@ const handleFindId = async () => {
 </script>
 
 <style scoped>
-/* 스타일을 간단하게 추가해서 확인 */
 .find-id-container {
   padding: 20px;
   display: flex;
